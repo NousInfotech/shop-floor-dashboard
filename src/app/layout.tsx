@@ -1,18 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Poppins } from "next/font/google";
 import "./globals.css";
-import { ReduxProvider } from "@/redux/provider"; 
+import { ReduxProvider } from "@/redux/provider";
 
-
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Import Poppins font
+const poppins = Poppins({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"], // You can customize the weights
+  variable: "--font-poppins",
 });
 
 export const metadata: Metadata = {
@@ -27,10 +22,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-      <ReduxProvider>
-          {children}
-          </ReduxProvider>
+      <body className={poppins.variable}>
+        <ReduxProvider>{children}</ReduxProvider>
       </body>
     </html>
   );

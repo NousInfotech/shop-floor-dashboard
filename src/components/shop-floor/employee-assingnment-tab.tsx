@@ -1,156 +1,195 @@
-'use client'
+// src/components/shop-floor/employee-assignment-tab.tsx
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { WorkOrder } from '@/types/work-order'
-import { StatusBadge } from '@/components/shared/status-badge'
-import { Settings, X } from 'lucide-react'
+import { useState } from "react"
+import { Employee } from "@/types/employee"
+import { Button } from "@/components/ui/button"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Switch } from "@/components/ui/switch"
+import { Input } from "@/components/ui/input"
+import { Settings, X } from "lucide-react"
 
-interface EmployeeAssignmentTabProps {
-  workOrder: WorkOrder
+interface Props {
+  workOrder: {
+    employees: Employee[]
+  }
 }
 
-export default function EmployeeAssignmentTab({ workOrder }: EmployeeAssignmentTabProps) {
-  const [newEmployee, setNewEmployee] = useState({
-    id: '',
-    name: '',
-    employmentType: 'Permanent',
-  })
+const StatusBadge = ({ status }: { status: Employee["status"] }) => {
+  const getColor = () => {
+    switch (status) {
+      case "Active":
+        return "bg-green-200 text-green-800"
+      case "Inactive":
+        return "bg-gray-200 text-gray-800"
+      case "Break":
+        return "bg-yellow-200 text-yellow-800"
+      default:
+        return ""
+    }
+  }
+
+  return (
+    <span
+      className={`px-2 py-1 rounded-full text-xs font-medium ${getColor()}`}
+    >
+      {status}
+    </span>
+  )
+}
+
+const EmployeeAssignmentTab = ({ workOrder }: Props) => {
   const [createTeam, setCreateTeam] = useState(false)
+  const [employees, setEmployees] = useState<Employee[]>(workOrder.employees || [])
+
+  const [newEmployee, setNewEmployee] = useState<{
+    id: string
+    name: string
+    employmentType: "Permanent" | "Temporary" | "Contract"
+  }>({
+    id: "",
+    name: "",
+    employmentType: "Permanent",
+  })
 
   const handleAddEmployee = () => {
-    // Add employee logic would go here
-    // Reset form after adding
+    const newEmp: Employee = {
+      id: newEmployee.id,
+      barcode: newEmployee.id,
+      name: newEmployee.name,
+      employmentType: newEmployee.employmentType,
+      status: "Active",
+    }
+
+    setEmployees((prev) => [...prev, newEmp])
+
+    // Clear input fields
     setNewEmployee({
-      id: '',
-      name: '',
-      employmentType: 'Permanent',
+      id: "",
+      name: "",
+      employmentType: "Permanent",
     })
+  }
+
+  const handleRemoveEmployee = (id: string) => {
+    setEmployees((prev) => prev.filter((emp) => emp.id !== id))
+  }
+
+  const handleStartProduction = () => {
+    if (createTeam && employees.length > 0) {
+      const team = {
+        teamName: "Team A",
+        members: employees,
+      }
+
+      console.log("Team created:", team)
+      // Send this team to backend if needed
+    }
   }
 
   return (
     <div>
-      <h3 className="text-lg font-medium mb-6">Add New Employee</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 mb-8">
-        <div className="sm:col-span-1">
-          <Input 
-            type="text" 
-            value={newEmployee.id}
-            onChange={(e) => setNewEmployee({...newEmployee, id: e.target.value})}
-            placeholder="Scan/Enter employee ID" 
-          />
-        </div>
-        <div className="sm:col-span-2">
-          <Input 
-            type="text" 
-            value={newEmployee.name}
-            onChange={(e) => setNewEmployee({...newEmployee, name: e.target.value})}
-            placeholder="Enter employee name" 
-          />
-        </div>
-        <div className="sm:col-span-1">
-          <Select 
-            value={newEmployee.employmentType}
-            onValueChange={(value) => setNewEmployee({...newEmployee, employmentType: value})}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Permanent">Permanent</SelectItem>
-              <SelectItem value="Temporary">Temporary</SelectItem>
-              <SelectItem value="Contract">Contract</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="sm:col-span-1">
-          <Button 
-            className="w-full bg-blue-600 hover:bg-blue-700"
-            onClick={handleAddEmployee}
-          >
-            Add
-          </Button>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold">Assign Employees</h2>
+        <div className="flex items-center gap-2">
+          <span>Create Team</span>
+          <Switch checked={createTeam} onCheckedChange={setCreateTeam} />
         </div>
       </div>
-      
-      <div className="flex items-center mb-6">
-        <Checkbox 
-          id="createTeam" 
-          checked={createTeam}
-          onCheckedChange={(checked) => setCreateTeam(checked === true)}
-          className="mr-2" 
+
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        <Input
+          placeholder="Employee ID"
+          value={newEmployee.id}
+          onChange={(e) => setNewEmployee({ ...newEmployee, id: e.target.value })}
         />
-        <label htmlFor="createTeam">Create team</label>
-        <span className="ml-4 text-sm text-gray-500">
-          (Create automatically when click on start production button)
-        </span>
+        <Input
+          placeholder="Name"
+          value={newEmployee.name}
+          onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })}
+        />
+       <select
+  className="border px-2 py-1 rounded-md"
+  value={newEmployee.employmentType}
+  onChange={(e) => {
+    const selectedType = e.target.value;
+    if (["Permanent", "Temporary", "Contract"].includes(selectedType)) {
+      setNewEmployee({
+        ...newEmployee,
+        employmentType: selectedType as "Permanent" | "Temporary" | "Contract", // Restrict values to this subset
+      });
+    }
+  }}
+>
+          <option value="Permanent">Permanent</option>
+          <option value="Temporary">Temporary</option>
+          <option value="Contract">Contract</option>
+        </select>
+        <Button onClick={handleAddEmployee}>Add Employee</Button>
       </div>
-      
-      <div className="mb-6">
-        <p className="text-gray-500 mb-4">
-          No operation selected - employee will be assigned to general work order
-        </p>
-      </div>
-      
-      <h3 className="text-lg font-medium mb-4">Assigned Employees</h3>
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID/Barcode</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Assigned Operation</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {workOrder.employees.length > 0 ? (
-              workOrder.employees.map((emp) => (
-                <TableRow key={emp.id}>
-                  <TableCell>{emp.barcode}</TableCell>
-                  <TableCell>{emp.name}</TableCell>
-                  <TableCell>Not assigned</TableCell>
-                  <TableCell>
-                    <StatusBadge status={emp.status} />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button variant="ghost" size="icon" className="text-blue-600 hover:text-blue-800">
-                        <Settings size={18} />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-800">
-                        <X size={18} />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-4 text-gray-500">
-                  No employees assigned yet
+
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Barcode</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Assigned Operation</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {employees.length > 0 ? (
+            employees.map((employee) => (
+              <TableRow key={employee.id}>
+                <TableCell>{employee.barcode}</TableCell>
+                <TableCell>{employee.name}</TableCell>
+                <TableCell>{employee.assignedOperation || "Not Assigned"}</TableCell>
+                <TableCell>
+                  <StatusBadge status={employee.status} />
+                </TableCell>
+                <TableCell>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      <Settings size={18} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-600 hover:text-red-800"
+                      onClick={() => handleRemoveEmployee(employee.id)}
+                    >
+                      <X size={18} />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      
-      <div className="mt-6 flex flex-wrap gap-6">
-        <div className="flex items-center">
-          <span className="w-3 h-3 bg-green-500 rounded-full inline-block mr-2"></span>
-          <span className="text-sm">Green indicates → Employee already existing</span>
-        </div>
-        <div className="flex items-center">
-          <span className="w-3 h-3 bg-red-500 rounded-full inline-block mr-2"></span>
-          <span className="text-sm">Red indicates → Employee is not existing</span>
-        </div>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center py-4 text-gray-500">
+                No employees assigned yet
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+
+      <div className="mt-6">
+        <Button onClick={handleStartProduction}>Start Production</Button>
       </div>
     </div>
   )
 }
+
+export default EmployeeAssignmentTab

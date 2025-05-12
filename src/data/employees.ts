@@ -1,14 +1,33 @@
-
+import { RateType } from './../types/employee';
 // data/employees.ts
-import { Employee } from '@/types/employee';
+import { Employee, EmployeeStatus, EmploymentType, ShiftType } from '@/types/employee';
 
-export const employeesData: Employee[] = [
+export const EmployeesData = [
   {
     id: '1',
     barcode: 'BC001',
     name: 'John Doe',
     employmentType: 'Permanent',
     status: 'Active',
+    employeeCode: 'EMP0001',
+    firstName: 'Alice',
+    lastName: 'Johnson',
+    email: 'alice.johnson@example.com',
+    phone: '+1-555-123-4567',
+    address: '1234 Elm Street, Springfield, IL, 62704',
+    site: 'Main Warehouse',
+    siteCode: 'MAIN01',
+    shift: 'Morning',
+    role: 'Warehouse Supervisor',
+    department: 'Operations',
+    position: 'Supervisor',
+    photo: 'https://example.com/photos/alice.jpg',
+    payment: {
+      currency: 'USD',
+      rateType: 'Monthly',
+      unitCost: 4500,
+      locationId: 'LOC001',
+    },
   },
   {
     id: '2',
@@ -16,6 +35,25 @@ export const employeesData: Employee[] = [
     name: 'Jane Smith',
     employmentType: 'Permanent',
     status: 'Active',
+    employeeCode: 'EMP0002',
+    firstName: 'Bob',
+    lastName: 'Smith',
+    email: 'bob.smith@example.com',
+    phone: '+1-555-987-6543',
+    address: '5678 Oak Avenue, Metropolis, NY, 10001',
+    site: 'Secondary Warehouse',
+    siteCode: 'SEC02',
+    shift: 'Afternoon',
+    role: 'Inventory Specialist',
+    department: 'Inventory',
+    position: 'Specialist',
+    photo: 'https://example.com/photos/bob.jpg',
+    payment: {
+      currency: 'USD',
+      rateType: 'Hourly',
+      unitCost: 25,
+      locationId: 'LOC002',
+    },
   },
   {
     id: '3',
@@ -23,6 +61,25 @@ export const employeesData: Employee[] = [
     name: 'Mike Johnson',
     employmentType: 'Temporary',
     status: 'Inactive',
+    employeeCode: 'EMP0003',
+    firstName: 'Clara',
+    lastName: 'Davis',
+    email: 'clara.davis@example.com',
+    phone: '+1-555-333-7890',
+    address: '90 Maple Blvd, Gotham, NJ, 07001',
+    site: 'Remote Office',
+    siteCode: 'REM03',
+    shift: 'Flexible',
+    role: 'Data Analyst',
+    department: 'Analytics',
+    position: 'Analyst',
+    photo: 'https://example.com/photos/clara.jpg',
+    payment: {
+      currency: 'USD',
+      rateType: 'Daily',
+      unitCost: 300,
+      locationId: 'LOC003',
+    },
   },
   {
     id: '4',
@@ -30,5 +87,36 @@ export const employeesData: Employee[] = [
     name: 'Sarah Williams',
     employmentType: 'Contract',
     status: 'Active',
+    employeeCode: 'EMP0004',
+    firstName: 'David',
+    lastName: 'Lee',
+    email: 'david.lee@example.com',
+    phone: '+1-555-888-1122',
+    address: '1010 Birch Lane, Star City, CA, 90210',
+    site: 'Main Warehouse',
+    siteCode: 'MAIN01',
+    shift: 'Night',
+    role: 'Forklift Operator',
+    department: 'Logistics',
+    position: 'Operator',
+    photo: 'https://example.com/photos/david.jpg',
+    payment: {
+      currency: 'USD',
+      rateType: 'Weekly',
+      unitCost: 800,
+      locationId: 'LOC004',
+    },
   },
 ];
+export const employees: Employee[] = EmployeesData.map(employee => ({
+  ...employee,
+  employmentType: employee.employmentType as EmploymentType,  // Cast to EmploymentType
+  status: employee.status as EmployeeStatus,  // Cast to EmployeeStatus
+  shift: employee.shift as ShiftType,  // Cast to ShiftType
+  payment: {
+    ...employee.payment,
+    rateType: employee.payment?.rateType as RateType,  // Cast to RateType
+  },
+}));
+
+

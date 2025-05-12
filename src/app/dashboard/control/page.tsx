@@ -1,18 +1,44 @@
-'use client'
-
+"use client";
 import { useState } from 'react'
-import { Calendar, ChevronLeft, ChevronRight, Search, Settings } from 'lucide-react'
+import {
+//  CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  Settings,
+  Filter,
+  BarChart2,
+  // Users,
+  Layout,
+  // Clock,
+  // Layers,
+  // AlertCircle,
+  // CheckCircle2,
+  Clipboard,
+  // ArrowRight
+} from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux'
+// import { format } from 'date-fns'
 import SiteSelector from '@/components/shop-floor/site-selector'
 import WorkOrderList from '@/components/shop-floor/work-order-list'
 import WorkOrderDetails from '@/components/shop-floor/work-order-details'
+import WorkOrderFilter from '@/components/shop-floor/work-order-filter'
+import CalendarPicker from '@/components/shop-floor/calendar-picker'
 import { selectActiveSite, setActiveSite } from '@/redux/features/sites/sitesSlice'
-import { selectWorkOrders, selectActiveWorkOrder, setActiveWorkOrder } from '@/redux/features/workOrders/workOrdersSlice'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  selectWorkOrders,
+  selectActiveWorkOrder,
+  setActiveWorkOrder
+} from '@/redux/features/workOrders/workOrdersSlice'
+import {
+  selectShowFilter,
+  setShowFilter,
+  // selectSelectedDate
+} from '@/redux/features/shopFloor/shopFloorSlice'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { WorkOrder } from '@/types/work-order'
-
 
 type Site = string;
 
@@ -21,111 +47,184 @@ export default function ShopFloorControlPage() {
   const activeSite = useSelector(selectActiveSite)
   const workOrders = useSelector(selectWorkOrders)
   const activeWorkOrder = useSelector(selectActiveWorkOrder)
+  const showFilter = useSelector(selectShowFilter)
+  // const selectedDate = useSelector(selectSelectedDate)
   const [subTab, setSubTab] = useState('details')
-  
-  // Format today's date for display
-  const today = new Date()
-  const dateOptions: Intl.DateTimeFormatOptions = { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  }
-  const formattedDate = today.toLocaleDateString('en-US', dateOptions)
-  
-  // Handle site selection
+  const [searchTerm, setSearchTerm] = useState('')
+  const [showSettings, setShowSettings] = useState(false)
+
+  // const today = new Date()
+  // const formattedDate = selectedDate
+  //   ? format(new Date(selectedDate), 'EEEE, MMMM d, yyyy')
+  //   : format(today, 'EEEE, MMMM d, yyyy')
+
+  const sites = ['Site A', 'Site B', 'Site C']
+
   const handleSiteChange = (siteName: Site) => {
     dispatch(setActiveSite(siteName))
   }
-  
-  // Handle work order selection
+
   const handleWorkOrderClick = (order: WorkOrder) => {
     dispatch(setActiveWorkOrder(order))
   }
 
+  const toggleFilter = () => {
+    dispatch(setShowFilter(!showFilter))
+  }
+
+ const filteredOrders = workOrders.filter(order =>
+  order.siteLocation === activeSite &&
+  order.name?.toLowerCase().includes(searchTerm.toLowerCase())
+);
+
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen p-6">
       {/* Site Selection Header */}
-      <div className="bg-gray-800 p-4 rounded-lg text-white flex items-center overflow-x-auto">
-        <button className="p-1 text-gray-400 hover:text-gray-200 mr-2">
-          <ChevronLeft size={24} />
-        </button>
-        
-        <SiteSelector 
-          activeSite={activeSite}
-          onSiteChange={handleSiteChange}
-        />
-        
-        <button className="p-1 text-gray-400 hover:text-gray-200 ml-auto">
-          <ChevronRight size={24} />
-        </button>
-        
-        <div className="ml-6 flex items-center">
-          <Calendar className="mr-2" size={20} />
-          <span>{formattedDate}</span>
+       <div className="flex items-center gap-3">
+          <div className="bg-blue-100 p-2 rounded-full">
+            <Layout className="h-6 w-6 text-blue-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-800">Shop Floor Control</h1>
+        </div>
+      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center bg-white p-4 border border-blue-100 rounded-lg shadow-md">
+       
+
+        <div className="flex-1 flex flex-col md:flex-row md:items-center gap-4">
+          <div className="flex items-center overflow-hidden bg-blue-50 rounded-lg border border-blue-100">
+            <button className="p-3 text-blue-500 hover:text-blue-700 hover:bg-blue-100 transition-colors">
+              <ChevronLeft size={20} />
+            </button>
+
+            <div className="flex-1 px-2">
+              <SiteSelector activeSite={activeSite} onSiteChange={handleSiteChange} />
+            </div>
+
+            <button className="p-3 text-blue-500 hover:text-blue-700 hover:bg-blue-100 transition-colors">
+              <ChevronRight size={20} />
+            </button>
+          </div>
+
+          <CalendarPicker />
         </div>
       </div>
 
-      {/* Shop Floor Control Main Content */}
-      <div className="flex gap-6 flex-col md:flex-row">
-        {/* Work Orders List */}
-        <div className="w-full md:w-1/3 bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="p-4 border-b flex items-center">
+      {/* Main Content */}
+      <div className="flex gap-6 flex-col lg:flex-row">
+        {/* Left: Work Order List */}
+        <div className="w-full lg:w-1/3 flex flex-col bg-white rounded-lg shadow-md p-5 max-h-[calc(100vh-200px)] overflow-hidden border border-gray-200">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-2">
+              <div className="bg-blue-100 p-1.5 rounded-full">
+                <Clipboard className="h-5 w-5 text-blue-600" />
+              </div>
+              <h2 className="text-lg font-semibold text-gray-800">Work Orders</h2>
+            </div>
+            <Badge className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium">
+              {filteredOrders.length} Orders
+            </Badge>
+          </div>
+
+          {/* Search + Actions */}
+          <div className="flex items-center gap-2 mb-4">
             <div className="relative flex-1">
               <Input
-                type="text"
-                className="pl-10 pr-4 rounded-full bg-gray-50 focus:ring-blue-500"
                 placeholder="Search work orders..."
+                className="pl-10 border-blue-200 focus:border-blue-400 focus:ring focus:ring-blue-200 focus:ring-opacity-50 rounded-md"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
               />
-              <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400" size={18} />
             </div>
-            <Button variant="ghost" size="icon" className="ml-2">
-              <Settings size={18} className="text-gray-500" />
+            <Button
+              variant="outline"
+              size="icon"
+              className={`text-gray-600 hover:text-blue-600 border-blue-200 hover:border-blue-400 hover:bg-blue-50 ${
+                showFilter ? 'bg-blue-100 text-blue-700 border-blue-300' : ''
+              }`}
+              onClick={toggleFilter}
+            >
+              <Filter size={18} />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className={`text-gray-600 hover:text-blue-600 border-blue-200 hover:border-blue-400 hover:bg-blue-50 ${
+                showSettings ? 'bg-blue-100 text-blue-700 border-blue-300' : ''
+              }`}
+              onClick={() => setShowSettings(!showSettings)}
+            >
+              <Settings size={18} />
             </Button>
           </div>
-          
-          <WorkOrderList 
-            workOrders={workOrders}
-            activeWorkOrderId={activeWorkOrder?.id}
-            onWorkOrderClick={handleWorkOrderClick}
-          />
+
+          {/* Settings Panel */}
+          {showSettings && (
+            <div className="mb-4 p-4 border border-blue-100 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 text-sm text-gray-700">
+              <div className="flex items-center gap-2 mb-2">
+                <Settings size={16} className="text-blue-600" />
+                <h3 className="font-medium">Display Settings</h3>
+              </div>
+              <div className="space-y-2 mt-3">
+                <div className="flex items-center justify-between">
+                  <span>Show completed orders</span>
+                  <div className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200">
+                    <span className="inline-block h-4 w-4 transform rounded-full bg-white transition translate-x-1"></span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Compact view</span>
+                  <div className="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600">
+                    <span className="inline-block h-4 w-4 transform rounded-full bg-white transition translate-x-6"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Filter */}
+          {showFilter && (
+            <div className="mb-4">
+              <WorkOrderFilter sites={sites} />
+            </div>
+          )}
+
+          {/* Scrollable list */}
+          <div className="flex-1 overflow-y-auto rounded-md border border-gray-100">
+            <WorkOrderList
+              workOrders={filteredOrders}
+              activeWorkOrderId={activeWorkOrder?.id}
+              onWorkOrderClick={handleWorkOrderClick}
+            />
+          </div>
         </div>
-        
-        {/* Work Order Details */}
-        <div className="w-full md:w-2/3 bg-white rounded-lg shadow-sm overflow-hidden">
+
+        {/* Right: Work Order Details */}
+        <div className="w-full lg:w-2/3 bg-white rounded-lg shadow-md p-6 border border-gray-200">
           {activeWorkOrder ? (
-            <WorkOrderDetails 
-              workOrder={activeWorkOrder} 
+            <WorkOrderDetails
+              workOrder={activeWorkOrder}
               activeTab={subTab}
               onTabChange={setSubTab}
             />
           ) : (
-            <div className="p-6 text-center">
-              <h2 className="text-xl font-medium mb-4">Select a work order to view details</h2>
-              <p className="text-gray-500">Viewing work orders for {formattedDate}</p>
+            <div className="text-center py-20 text-gray-500">
+              <div className="inline-flex bg-blue-100 p-4 rounded-full mb-4">
+                <BarChart2 size={28} className="text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-700">No work order selected</h3>
+              <p className="text-sm mt-3 max-w-md mx-auto text-gray-500">
+                Select a work order from the list to view its details, schedule, and production metrics.
+              </p>
+              <Button 
+                variant="outline" 
+                className="mt-4 border-blue-200 text-blue-600 hover:bg-blue-50"
+              >
+                Create New Work Order
+              </Button>
             </div>
           )}
         </div>
-      </div>
-
-      {/* Example of using the Tabs component */}
-      <div className="bg-white rounded-lg shadow-sm p-4">
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="production">Production</TabsTrigger>
-            <TabsTrigger value="resources">Resources</TabsTrigger>
-          </TabsList>
-          <TabsContent value="overview" className="p-4">
-            Work order overview content would go here
-          </TabsContent>
-          <TabsContent value="production" className="p-4">
-            Production details would go here
-          </TabsContent>
-          <TabsContent value="resources" className="p-4">
-            Resources information would go here
-          </TabsContent>
-        </Tabs>
       </div>
     </div>
   )

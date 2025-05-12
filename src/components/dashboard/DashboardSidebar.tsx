@@ -70,7 +70,7 @@ export default function DashboardSidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "group flex items-center px-2 py-3 text-base font-medium rounded-md transition-colors",
+                "group flex items-center px-2 py-3 text-sm font-medium rounded-md transition-colors",
                 pathname === item.href
                   ? "bg-blue-600 text-white"
                   : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900"
