@@ -125,14 +125,15 @@ export const selectFilteredWorkOrders = (state: RootState) => {
     }
     
     // Filter by site (from filter options)
-    if (filterOptions.sites.length > 0 && !filterOptions.sites.includes(order.siteLocation)) {
-      return false
-    }
+ if (filterOptions.sites.length > 0 && order.siteLocation && !filterOptions.sites.includes(order.siteLocation)) {
+  return false;
+}
+
     
     // Filter by text search (case insensitive)
     if (
         filterText &&
-        !order.orderNo.toLowerCase().includes(filterText.toLowerCase()) &&
+        !order.orderNo?.toLowerCase().includes(filterText.toLowerCase()) &&
         !order.part?.name?.toLowerCase().includes(filterText.toLowerCase())
       ) {
         return false;
