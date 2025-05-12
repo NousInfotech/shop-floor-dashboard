@@ -5,18 +5,85 @@ import {
   CheckCircle2, 
   Clock, 
   BarChart2, 
-  XCircle,
-//   AlertTriangle,
-//   Calendar,
-//   Plus 
+  XCircle 
 } from 'lucide-react';
 import { WorkOrder } from '@/types/work-order';
 import WorkOrderItem from './WorkOrderItem';
 import WorkOrderDetails from './WorkOrderDetails';
 import WorkOrderProgress from './WorkOrderProgress';
+
 interface WorkOrderListProps {
   workOrders: WorkOrder[];
 }
+
+interface FilterDropdownProps {
+  options: { value: string; label: string; icon?: React.ReactNode; className?: string }[];
+  currentFilter: string | null;
+  setFilter: React.Dispatch<React.SetStateAction<string | null>>;
+  type: 'status' | 'priority';
+}
+
+const FilterDropdown = ({ options, currentFilter, setFilter, type }: FilterDropdownProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className={`
+          flex items-center space-x-2 px-3 py-2 rounded-lg border 
+          ${currentFilter 
+            ? 'bg-blue-50 border-blue-200 text-blue-700' 
+            : 'bg-white border-gray-300 text-gray-700'}
+          hover:bg-gray-50 transition-colors
+        `}
+      >
+        <Filter className="w-4 h-4" />
+        <span>{type === 'status' ? 'Status' : 'Priority'}</span>
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+          <div className="p-2 space-y-1">
+            {options.map(option => (
+              <button
+                key={option.value}
+                onClick={() => {
+                  setFilter(currentFilter === option.value ? null : option.value);
+                  setIsOpen(false);
+                }}
+                className={`
+                  w-full flex items-center space-x-3 px-3 py-2 rounded-md text-left
+                  ${currentFilter === option.value 
+                    ? 'bg-blue-100 text-blue-800' 
+                    : 'hover:bg-gray-100'}
+                  transition-colors
+                `}
+              >
+                {option.icon}
+                <span>{option.label}</span>
+                {currentFilter === option.value && (
+                  <CheckCircle2 className="ml-auto w-4 h-4 text-blue-600" />
+                )}
+              </button>
+            ))}
+            {currentFilter && (
+              <button
+                onClick={() => {
+                  setFilter(null);
+                  setIsOpen(false);
+                }}
+                className="w-full text-center text-sm text-gray-500 hover:text-gray-700 mt-2"
+              >
+                Clear Filter
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default function WorkOrderList({ workOrders }: WorkOrderListProps) {
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrder | null>(null);
@@ -28,7 +95,6 @@ export default function WorkOrderList({ workOrders }: WorkOrderListProps) {
   const handleRowClick = (workOrder: WorkOrder) => {
     setSelectedWorkOrder(workOrder);
     
-    // Change detail view based on status
     if (workOrder.status === 'completed' || workOrder.status === 'on-hold') {
       setDetailView('progress');
     } else {
@@ -54,90 +120,18 @@ export default function WorkOrderList({ workOrders }: WorkOrderListProps) {
   // Filtering logic
   const filteredWorkOrders = useMemo(() => {
     return workOrders.filter(workOrder => {
-      // Search filter
       const matchesSearch = !searchTerm || 
         workOrder.site?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         workOrder.workCenter?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         workOrder.operation?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         workOrder.id.toLowerCase().includes(searchTerm.toLowerCase());
 
-      // Status filter
       const matchesStatus = !statusFilter || workOrder.status === statusFilter;
-
-      // Priority filter
       const matchesPriority = !priorityFilter || workOrder.priority?.toLowerCase() === priorityFilter;
 
       return matchesSearch && matchesStatus && matchesPriority;
     });
   }, [workOrders, searchTerm, statusFilter, priorityFilter]);
-
-  // Render filter dropdown
-  const renderFilterDropdown = (
-    options: { value: string; label: string; icon?: React.ReactNode; className?: string }[], 
-    currentFilter: string | null, 
-    setFilter: React.Dispatch<React.SetStateAction<string | null>>,
-    type: 'status' | 'priority'
-  ) => {
-    const [isOpen, setIsOpen] = useState(false);
-
-    return (
-      <div className="relative">
-        <button 
-          onClick={() => setIsOpen(!isOpen)}
-          className={`
-            flex items-center space-x-2 px-3 py-2 rounded-lg border 
-            ${currentFilter 
-              ? 'bg-blue-50 border-blue-200 text-blue-700' 
-              : 'bg-white border-gray-300 text-gray-700'}
-            hover:bg-gray-50 transition-colors
-          `}
-        >
-          <Filter className="w-4 h-4" />
-          <span>{type === 'status' ? 'Status' : 'Priority'}</span>
-        </button>
-
-        {isOpen && (
-          <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-            <div className="p-2 space-y-1">
-              {options.map(option => (
-                <button
-                  key={option.value}
-                  onClick={() => {
-                    setFilter(currentFilter === option.value ? null : option.value);
-                    setIsOpen(false);
-                  }}
-                  className={`
-                    w-full flex items-center space-x-3 px-3 py-2 rounded-md text-left
-                    ${currentFilter === option.value 
-                      ? 'bg-blue-100 text-blue-800' 
-                      : 'hover:bg-gray-100'}
-                    transition-colors
-                  `}
-                >
-                  {option.icon}
-                  <span>{option.label}</span>
-                  {currentFilter === option.value && (
-                    <CheckCircle2 className="ml-auto w-4 h-4 text-blue-600" />
-                  )}
-                </button>
-              ))}
-              {currentFilter && (
-                <button
-                  onClick={() => {
-                    setFilter(null);
-                    setIsOpen(false);
-                  }}
-                  className="w-full text-center text-sm text-gray-500 hover:text-gray-700 mt-2"
-                >
-                  Clear Filter
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
 
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden">
@@ -159,8 +153,8 @@ export default function WorkOrderList({ workOrders }: WorkOrderListProps) {
         </div>
         
         <div className="flex space-x-4">
-          {renderFilterDropdown(STATUS_OPTIONS, statusFilter, setStatusFilter, 'status')}
-          {renderFilterDropdown(PRIORITY_OPTIONS, priorityFilter, setPriorityFilter, 'priority')}
+          <FilterDropdown options={STATUS_OPTIONS} currentFilter={statusFilter} setFilter={setStatusFilter} type="status" />
+          <FilterDropdown options={PRIORITY_OPTIONS} currentFilter={priorityFilter} setFilter={setPriorityFilter} type="priority" />
         </div>
       </div>
 
