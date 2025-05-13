@@ -125,7 +125,7 @@ const LocationFormModal: React.FC<LocationFormModalProps> = ({
           <SelectTrigger className="w-full border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
             <SelectValue placeholder="Select a site" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className='bg-white'>
             {sites.map(site => (
               <SelectItem key={site.id} value={site.id}>
                 {site.name}
