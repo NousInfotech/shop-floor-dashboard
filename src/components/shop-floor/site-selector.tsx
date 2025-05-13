@@ -34,10 +34,14 @@ export default function SiteSelector({ activeSite, onSiteChange }: SiteSelectorP
           <div className="flex flex-col items-start">
             <span className="font-medium text-sm">{site.name}</span>
             <div className="flex items-center gap-1 mt-0.5">
-              <StatusBadge status={site.status} className={cn(
-                "mt-0.5 text-xs",
-                activeSite === site.name ? "opacity-90" : "opacity-80"
-              )} />
+              <StatusBadge
+  status={site.status ?? 'inactive'}
+  className={cn(
+    "mt-0.5 text-xs",
+    activeSite === site.name ? "opacity-90" : "opacity-80"
+  )}
+/>
+
             </div>
           </div>
         </button>

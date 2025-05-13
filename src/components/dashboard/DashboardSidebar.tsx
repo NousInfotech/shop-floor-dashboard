@@ -14,7 +14,8 @@ import {
   FileBarChart,
   Menu,
   ChevronLeft,
-  LayoutDashboard
+  LayoutDashboard,
+  Building
 } from "lucide-react";
 
 type SidebarItem = {
@@ -32,6 +33,7 @@ export default function DashboardSidebar() {
     { title: "Employee", href: "/dashboard/employee", icon: <Users className="h-5 w-5" /> },
     { title: "Team", href: "/dashboard/team", icon: <UsersRound className="h-5 w-5" /> },
     { title: "Work Orders", href: "/dashboard/work-orders", icon: <ClipboardList className="h-5 w-5" /> },
+    { title: "Site", href: "/dashboard/site", icon: <Building className="h-5 w-5" /> },
     { title: "Shopfloor Control", href: "/dashboard/control", icon: <PanelTop className="h-5 w-5" /> },
     { title: "Employee Activity", href: "/dashboard/activity", icon: <Activity className="h-5 w-5" /> },
     { title: "Labor Efficiency", href: "/dashboard/efficiency", icon: <TrendingUp className="h-5 w-5" /> },
