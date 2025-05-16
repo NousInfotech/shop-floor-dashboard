@@ -1,8 +1,8 @@
 "use client";
 import React from "react";
-import { usePathname } from "next/navigation";
-import { Bell, Search, Settings, UserCircle } from "lucide-react";
-import { Input } from "@/components/ui/input";
+// import { usePathname } from "next/navigation";
+import { Bell, LogOut, User, Settings } from "lucide-react";
+// import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,34 +14,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function DashboardHeader() {
-  const pathname = usePathname();
-
-  const getPageTitle = () => {
-    const path = pathname.split("/").pop();
-    if (!path) return "Dashboard";
-
-    return path
-      .split("-")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  };
-
   return (
     <header className="bg-white border-b border-zinc-200 py-4 px-6 text-zinc-900">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">{getPageTitle()}</h1>
-
+      <div className="flex justify-end items-center">
+        {/* Right-aligned items container */}
         <div className="flex items-center space-x-4">
-          {/* Search */}
-          <div className="hidden md:flex relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
-            <Input
-              type="search"
-              placeholder="Search..."
-              className="pl-9 w-64 bg-zinc-100 border border-zinc-300 text-zinc-900"
-            />
-          </div>
-
           {/* Notifications */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -83,49 +60,43 @@ export default function DashboardHeader() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Settings */}
-          <Button variant="ghost" size="icon" className="text-zinc-900">
-            <Settings className="h-5 w-5" />
-          </Button>
           {/* User Profile Dropdown */}
           <DropdownMenu>
-  <DropdownMenuTrigger asChild>
-    <Button variant="ghost" size="icon" className="text-zinc-900 relative">
-      <img
-        src="/user-avatar.png"
-        alt="User"
-        className="h-8 w-8 rounded-full object-cover"
-      />
-    </Button>
-  </DropdownMenuTrigger>
-  <DropdownMenuContent align="end" className="w-56 bg-white text-zinc-900 border border-zinc-200 rounded-lg shadow-lg">
-    <div className="flex items-center space-x-3 px-4 py-3">
-      <img
-        src="/user-avatar.png"
-        alt="Admin"
-        className="h-10 w-10 rounded-full object-cover"
-      />
-      <div>
-        <p className="text-sm font-medium">Admin</p>
-        <button className="text-xs text-blue-600 hover:underline flex items-center gap-1 mt-1">
-          <UserCircle className="h-4 w-4" />
-          Kind Settings
-        </button>
-      </div>
-    </div>
-    <DropdownMenuSeparator />
-    <DropdownMenuItem className="cursor-pointer">
-      Role: Super Admin
-    </DropdownMenuItem>
-    <DropdownMenuItem className="cursor-pointer px-4 py-2">
-      <button className="w-full bg-red-500 hover:bg-red-600 text-white text-sm font-medium py-1.5 rounded-md transition-colors">
-        Logout
-      </button>
-    </DropdownMenuItem>
-  </DropdownMenuContent>
-</DropdownMenu>
-
-
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="flex items-center space-x-2 text-zinc-900 hover:bg-zinc-100">
+                <div className="h-8 w-8 bg-slate-800 rounded-full flex items-center justify-center text-white">
+                  JD
+                </div>
+                <span className="font-medium">John Doe</span>
+                <span className="text-zinc-400">▼</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64 bg-white text-zinc-900 border border-zinc-200 rounded-lg shadow-lg p-1">
+              {/* User Info Section */}
+              <div className="px-4 py-3 border-b border-zinc-100">
+                <p className="font-medium text-base mb-1">John Doe</p>
+                <p className="text-sm text-zinc-500">john.doe@example.com</p>
+              </div>
+              
+              {/* Menu Items */}
+              <DropdownMenuItem className="cursor-pointer flex items-center py-2 px-4 hover:bg-zinc-50">
+                <User className="h-4 w-4 mr-3 text-zinc-600" />
+                <span>Profile</span>
+              </DropdownMenuItem>
+              
+              <DropdownMenuItem className="cursor-pointer flex items-center py-2 px-4 hover:bg-zinc-50">
+                <Settings className="h-4 w-4 mr-3 text-zinc-600" />
+                <span>Settings</span>
+              </DropdownMenuItem>
+              
+              <DropdownMenuSeparator className="my-1" />
+              
+              <DropdownMenuItem className="cursor-pointer flex items-center py-2 px-4 hover:bg-zinc-50 text-red-600">
+                <LogOut className="h-4 w-4 mr-3" />
+                <span>Logout</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>

@@ -159,7 +159,7 @@ export default function EmployeeManagement() {
 
   return (
     <div className="w-full max-w-7xl mx-auto py-4">
-      <div className="flex items-center gap-4 mb-6 bg-white p-4 rounded-md">
+      <div className="flex items-center gap-4 mb-6 bg-white p-4 rounded-3xl">
         <Users className="h-8 w-8 text-blue-600" />
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Employees</h1>
