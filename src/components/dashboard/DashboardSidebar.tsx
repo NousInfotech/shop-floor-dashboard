@@ -32,7 +32,7 @@ type SidebarItem = {
 
 export default function DashboardSidebar() {
   const pathname = usePathname();
-  const [sidebarHidden, setSidebarHidden] = useState(false);
+  const [sidebarHidden, setSidebarHidden] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
   const [windowWidth, setWindowWidth] = useState<number>(
     typeof window !== "undefined" ? window.innerWidth : 1024
