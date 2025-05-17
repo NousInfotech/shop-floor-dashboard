@@ -11,9 +11,9 @@ import {
 import { Check, X, RotateCcw } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Calendar } from '@/components/ui/calendar'
+// import { Calendar } from '@/components/ui/calendar'
 import { format } from 'date-fns'
-import { DateRange } from 'react-day-picker'
+// import { DateRange } from 'react-day-picker'
 interface WorkOrderFilterProps {
   sites: string[]
 }
@@ -107,7 +107,8 @@ const WorkOrderFilter = ({ sites }: WorkOrderFilterProps) => {
   }
   
   return (
-    <div className="absolute z-30 mt-1 right-0 w-80 bg-white shadow-lg rounded-lg border border-gray-200 overflow-hidden">
+  <div className="absolute z-30 mt-1 left-48 top-32 w-80 max-h-[90vh] bg-white shadow-lg rounded-lg border border-gray-200 flex flex-col">
+
       <div className="p-3 border-b border-gray-200 flex justify-between items-center bg-blue-50">
         <div className="flex items-center">
           <h3 className="font-medium text-blue-800 text-sm">Filter Work Orders</h3>
@@ -120,7 +121,8 @@ const WorkOrderFilter = ({ sites }: WorkOrderFilterProps) => {
         </Button>
       </div>
       
-      <div className="p-3 space-y-3 max-h-[450px] overflow-y-auto">
+     <div className="p-3 space-y-3 overflow-y-auto flex-grow">
+
         {/* Status Filter */}
         <div>
           <h4 className="text-xs font-medium text-gray-700 mb-1.5">Status</h4>
@@ -170,7 +172,7 @@ const WorkOrderFilter = ({ sites }: WorkOrderFilterProps) => {
         </div>
         
         {/* Date Range Filter */}
-        <div>
+        {/* <div>
           <div className="flex items-center justify-between">
             <h4 className="text-xs font-medium text-gray-700 mb-1.5">Date Range</h4>
             {(dateRange.from || dateRange.to) && (
@@ -207,7 +209,7 @@ const WorkOrderFilter = ({ sites }: WorkOrderFilterProps) => {
               {dateRange.to ? format(dateRange.to, 'MMM d, yyyy') : ' End date'}
             </span>
           </div>
-        </div>
+        </div> */}
       </div>
       
       {/* Footer Actions */}

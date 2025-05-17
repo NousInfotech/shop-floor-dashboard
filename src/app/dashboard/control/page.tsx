@@ -1,30 +1,22 @@
-"use client";
-import { useState } from 'react'
+'use client';
+import { useState, useEffect } from 'react'
 import {
-//  CalendarIcon,
   ChevronLeft,
   ChevronRight,
   Search,
   Settings,
   Filter,
   BarChart2,
-  // Users,
   Layout,
-  // Clock,
-  // Layers,
-  // AlertCircle,
-  // CheckCircle2,
   Clipboard,
-  // ArrowRight
 } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux'
-// import { format } from 'date-fns'
 import SiteSelector from '@/components/shop-floor/site-selector'
 import WorkOrderList from '@/components/shop-floor/work-order-list'
 import WorkOrderDetails from '@/components/shop-floor/work-order-details'
 import WorkOrderFilter from '@/components/shop-floor/work-order-filter'
 import CalendarPicker from '@/components/shop-floor/calendar-picker'
-import { selectActiveSite, setActiveSite } from '@/redux/features/sites/sitesSlice'
+import { selectActiveSite, setActiveSite, selectSites } from '@/redux/features/sites/sitesSlice'
 import {
   selectWorkOrders,
   selectActiveWorkOrder,
@@ -33,7 +25,6 @@ import {
 import {
   selectShowFilter,
   setShowFilter,
-  // selectSelectedDate
 } from '@/redux/features/shopFloor/shopFloorSlice'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -45,20 +36,29 @@ type Site = string;
 export default function ShopFloorControlPage() {
   const dispatch = useDispatch()
   const activeSite = useSelector(selectActiveSite)
+  const sites = useSelector(selectSites)
   const workOrders = useSelector(selectWorkOrders)
   const activeWorkOrder = useSelector(selectActiveWorkOrder)
   const showFilter = useSelector(selectShowFilter)
-  // const selectedDate = useSelector(selectSelectedDate)
   const [subTab, setSubTab] = useState('details')
   const [searchTerm, setSearchTerm] = useState('')
   const [showSettings, setShowSettings] = useState(false)
+  const [startSiteIndex, setStartSiteIndex] = useState(0)
+  
+  // Number of sites to display at once
+  const visibleSiteCount = 3
 
-  // const today = new Date()
-  // const formattedDate = selectedDate
-  //   ? format(new Date(selectedDate), 'EEEE, MMMM d, yyyy')
-  //   : format(today, 'EEEE, MMMM d, yyyy')
-
-  const sites = ['Site A', 'Site B', 'Site C']
+  // Calculate which sites should be visible
+  const visibleSiteIndices = Array.from({ length: visibleSiteCount }, (_, i) => startSiteIndex + i)
+  
+  // Find the index of the active site
+  useEffect(() => {
+    const activeIndex = sites.findIndex(site => site.name === activeSite)
+    if (activeIndex >= 0 && (activeIndex < startSiteIndex || activeIndex >= startSiteIndex + visibleSiteCount)) {
+      // If active site is out of view, adjust the startIndex to show it
+      setStartSiteIndex(Math.max(0, Math.min(sites.length - visibleSiteCount, activeIndex)))
+    }
+  }, [activeSite, sites, startSiteIndex])
 
   const handleSiteChange = (siteName: Site) => {
     dispatch(setActiveSite(siteName))
@@ -72,40 +72,64 @@ export default function ShopFloorControlPage() {
     dispatch(setShowFilter(!showFilter))
   }
 
- const filteredOrders = workOrders.filter(order =>
-  order.siteLocation === activeSite &&
-  order.name?.toLowerCase().includes(searchTerm.toLowerCase())
-);
+  const navigatePrevSite = () => {
+    if (startSiteIndex > 0) {
+      setStartSiteIndex(startSiteIndex - 1)
+    }
+  }
 
+  const navigateNextSite = () => {
+    if (startSiteIndex < sites.length - visibleSiteCount) {
+      setStartSiteIndex(startSiteIndex + 1)
+    }
+  }
+
+  const filteredOrders = workOrders.filter(order =>
+    order.siteLocation === activeSite &&
+    order.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Determine if navigation buttons should be disabled
+  const isPrevDisabled = startSiteIndex === 0
+  const isNextDisabled = startSiteIndex >= sites.length - visibleSiteCount
 
   return (
     <div className="flex flex-col gap-6 bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen p-6">
       {/* Site Selection Header */}
-       <div className="flex items-center gap-3">
-          <div className="bg-blue-100 p-2 rounded-full">
-            <Layout className="h-6 w-6 text-blue-600" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-800">Shop Floor Control</h1>
+      <div className="flex items-center gap-3">
+        <div className="bg-blue-100 p-2 rounded-full">
+          <Layout className="h-6 w-6 text-blue-600" />
         </div>
+        <h1 className="text-2xl font-bold text-gray-800">Shop Floor Control</h1>
+      </div>
       <div className="flex flex-col md:flex-row gap-4 items-start md:items-center bg-white p-4 border border-blue-100 rounded-lg shadow-md">
-       
-
         <div className="flex-1 flex flex-col md:flex-row md:items-center gap-4">
-          <div className="flex items-center overflow-hidden bg-blue-50 rounded-lg border border-blue-100">
-            <button className="p-3 text-blue-500 hover:text-blue-700 hover:bg-blue-100 transition-colors">
+          <CalendarPicker />
+          <div className="flex items-center bg-blue-50 rounded-lg border border-blue-100 w-full">
+            <button 
+              className={`p-3 text-blue-500 hover:text-blue-700 hover:bg-blue-100 transition-colors ${isPrevDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={navigatePrevSite}
+              disabled={isPrevDisabled}
+            >
               <ChevronLeft size={20} />
             </button>
 
             <div className="flex-1 px-2">
-              <SiteSelector activeSite={activeSite} onSiteChange={handleSiteChange} />
+              <SiteSelector 
+                activeSite={activeSite} 
+                onSiteChange={handleSiteChange}
+                visibleSiteIndices={visibleSiteIndices}
+              />
             </div>
 
-            <button className="p-3 text-blue-500 hover:text-blue-700 hover:bg-blue-100 transition-colors">
+            <button 
+              className={`p-3 text-blue-500 hover:text-blue-700 hover:bg-blue-100 transition-colors ${isNextDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={navigateNextSite}
+              disabled={isNextDisabled}
+            >
               <ChevronRight size={20} />
             </button>
           </div>
-
-          <CalendarPicker />
         </div>
       </div>
 
@@ -185,12 +209,12 @@ export default function ShopFloorControlPage() {
           {/* Filter */}
           {showFilter && (
             <div className="mb-4">
-              <WorkOrderFilter sites={sites} />
+              <WorkOrderFilter sites={sites.map(site => site.name)} />
             </div>
           )}
 
           {/* Scrollable list */}
-          <div className="flex-1 overflow-y-auto rounded-md border border-gray-100">
+          <div className="flex-1  rounded-md border border-gray-100">
             <WorkOrderList
               workOrders={filteredOrders}
               activeWorkOrderId={activeWorkOrder?.id}

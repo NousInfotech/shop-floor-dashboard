@@ -186,7 +186,7 @@ export default function DashboardSidebar() {
 
       <div
         className={cn(
-          "fixed top-0 left-0 z-30 flex flex-col h-screen bg-gradient-to-b from-slate-800 to-slate-900 text-white transition-all duration-300 border-r border-slate-700",
+          "relative top-0 left-0 z-30 flex flex-col h-screen bg-gradient-to-b from-slate-800 to-slate-900 text-white transition-all duration-300 border-r border-slate-700",
           sidebarHidden
             ? "w-0 overflow-hidden"                     // Completely hidden
             : collapsed

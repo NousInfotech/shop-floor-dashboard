@@ -9,14 +9,24 @@ import { Building2 } from 'lucide-react'
 interface SiteSelectorProps {
   activeSite: string
   onSiteChange: (siteName: string) => void
+  visibleSiteIndices: number[]
 }
 
-export default function SiteSelector({ activeSite, onSiteChange }: SiteSelectorProps) {
+export default function SiteSelector({
+  activeSite,
+  onSiteChange,
+  visibleSiteIndices,
+}: SiteSelectorProps) {
   const sites = useSelector(selectSites)
-  
+
+  // Filter valid indices and then map
+  const visibleSites = visibleSiteIndices
+    .filter(index => index >= 0 && index < sites.length)
+    .map(index => sites[index])
+
   return (
-    <div className="flex space-x-3 overflow-x-auto py-1 px-2">
-      {sites.map((site) => (
+    <div className="w-full grid grid-cols-3 gap-3">
+      {visibleSites.map((site) => (
         <button
           key={site.id}
           className={cn(
@@ -27,21 +37,22 @@ export default function SiteSelector({ activeSite, onSiteChange }: SiteSelectorP
           )}
           onClick={() => onSiteChange(site.name)}
         >
-          <Building2 className={cn(
-            "h-4 w-4",
-            activeSite === site.name ? "text-white" : "text-blue-500"
-          )} />
+          <Building2
+            className={cn(
+              "h-4 w-4",
+              activeSite === site.name ? "text-white" : "text-blue-500"
+            )}
+          />
           <div className="flex flex-col items-start">
             <span className="font-medium text-sm">{site.name}</span>
             <div className="flex items-center gap-1 mt-0.5">
               <StatusBadge
-  status={site.status ?? 'inactive'}
-  className={cn(
-    "mt-0.5 text-xs",
-    activeSite === site.name ? "opacity-90" : "opacity-80"
-  )}
-/>
-
+                status={site.status ?? 'inactive'}
+                className={cn(
+                  "mt-0.5 text-xs",
+                  activeSite === site.name ? "opacity-90" : "opacity-80"
+                )}
+              />
             </div>
           </div>
         </button>
