@@ -77,3 +77,23 @@ export interface ProductCategoryData {
   category: string;
   description: string;
 }
+
+export interface Shift {
+  id: string;
+  name: string;
+  startTime: string;
+  endTime: string;
+  breakDuration: number;
+  location: string;
+  active: boolean;
+  duration?: string;
+}
+
+
+export interface Assignment {
+  id: string;
+  date: Date;
+  shiftId: string;
+  employeeId: string;
+  workOrderId: string | null;
+}

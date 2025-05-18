@@ -17,7 +17,7 @@ export default function WorkOrderList({
   onWorkOrderClick
 }: WorkOrderListProps) {
   return (
-    <div className="overflow-y-auto max-h-[calc(100vh-320px)]">
+    <div className="overflow-y-auto max-h-[calc(100vh-300px)]">
       {workOrders.length > 0 ? (
         workOrders.map((order) => (
           <div

@@ -107,7 +107,7 @@ const WorkOrderFilter = ({ sites }: WorkOrderFilterProps) => {
   }
   
   return (
-  <div className="absolute z-30 mt-1 left-48 top-32 w-80 max-h-[90vh] bg-white shadow-lg rounded-lg border border-gray-200 flex flex-col">
+  <div className="absolute z-30 mt-1 left-96 top-32 w-80 max-h-[90vh] bg-white shadow-lg rounded-lg border border-gray-200 flex flex-col">
 
       <div className="p-3 border-b border-gray-200 flex justify-between items-center bg-blue-50">
         <div className="flex items-center">

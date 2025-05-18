@@ -2,13 +2,13 @@
 
 import { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { StatusBadge } from '@/components/shared/status-badge'
+// import { StatusBadge } from '@/components/shared/status-badge'
 import { WorkOrder } from '@/types/work-order'
 import WorkOrderDetailsTab from './work-order-details-tab'
 import ProductionTab from './production-tab'
 import EmployeeAssignmentTab from './employee-assingnment-tab'
 import TimeLogTab from './time-log-tab'
-import { ActionButtons } from '../shared/action-buttons'
+// import { ActionButtons } from '../shared/action-buttons'
 
 import { MdInfo, MdFactory, MdGroup, MdAccessTime } from 'react-icons/md'
 
@@ -23,54 +23,54 @@ export default function WorkOrderDetails({
   workOrder,
   activeTab,
   onTabChange,
-  onStatusChange
+  // onStatusChange
 }: WorkOrderDetailsProps) {
-  const [status, setStatus] = useState(workOrder.status)
-  const [timeLog, setTimeLog] = useState<Array<{
+  const [status, ] = useState(workOrder.status)
+  const [timeLog, ] = useState<Array<{
     timestamp: string;
     operationId: string;
     action: string;
     description: string;
   }>>([])
 
-  const handleStatusChange = (newStatus: string) => {
-    setStatus(newStatus as typeof status)
+  // const handleStatusChange = (newStatus: string) => {
+  //   setStatus(newStatus as typeof status)
 
-    const now = new Date()
-    const timestamp = now.toLocaleString()
+  //   const now = new Date()
+  //   const timestamp = now.toLocaleString()
 
-    setTimeLog(prev => [
-      ...prev,
-      {
-        timestamp,
-        operationId: 'General',
-        action: `Status changed to ${newStatus}`,
-        description: `Work order status updated from ${status} to ${newStatus}`
-      }
-    ])
+  //   setTimeLog(prev => [
+  //     ...prev,
+  //     {
+  //       timestamp,
+  //       operationId: 'General',
+  //       action: `Status changed to ${newStatus}`,
+  //       description: `Work order status updated from ${status} to ${newStatus}`
+  //     }
+  //   ])
 
-    if (onStatusChange) {
-      onStatusChange(workOrder.id, newStatus)
-    }
-  }
+  //   if (onStatusChange) {
+  //     onStatusChange(workOrder.id, newStatus)
+  //   }
+  // }
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      <div className="p-6 border-b flex justify-between items-center bg-gray-50">
+      <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
         <div>
           <h2 className="text-lg font-medium text-gray-600">Work Order No.</h2>
           <h1 className="text-xl font-bold text-gray-900">{workOrder.orderNo}</h1>
         </div>
-        <StatusBadge status={status} />
+        {/* <StatusBadge status={status} /> */}
       </div>
-
+{/* 
       <div className="p-4 border-b">
         <ActionButtons
           initialStatus={status}
           onStatusChange={handleStatusChange}
           disabled={status === 'COMPLETED'}
         />
-      </div>
+      </div> */}
 
       <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
         <TabsList className="w-full justify-start  px-2  rounded-t-lg shadow-inner">

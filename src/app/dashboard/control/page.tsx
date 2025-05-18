@@ -136,7 +136,7 @@ export default function ShopFloorControlPage() {
       {/* Main Content */}
       <div className="flex gap-6 flex-col lg:flex-row">
         {/* Left: Work Order List */}
-        <div className="w-full lg:w-1/3 flex flex-col bg-white rounded-lg shadow-md p-5 max-h-[calc(100vh-200px)] overflow-hidden border border-gray-200">
+        <div className="w-full lg:w-1/3 flex flex-col bg-white rounded-lg shadow-md p-5 max-h-[calc(100vh)] overflow-hidden border border-gray-200">
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-2">
               <div className="bg-blue-100 p-1.5 rounded-full">

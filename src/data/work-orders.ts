@@ -5,7 +5,7 @@ export const workOrdersData: WorkOrder[] = [
   {
     id: '1',
     orderNo: '20172943',
-    name: "",
+    name: "main",
     siteLocation: 'Main Factory',
     startTime: '01/04/2021 2:10 PM',
     endTime: '01/04/2021 2:39 PM',
@@ -55,7 +55,7 @@ export const workOrdersData: WorkOrder[] = [
   {
     id: '2',
     orderNo: '20178164',
-    name: '',
+    name: 'warehouse',
     siteLocation: 'Main Factory',
     startTime: '01/04/2021 7:52 PM',
     endTime: '02/04/2021 9:30 AM',
@@ -87,7 +87,7 @@ export const workOrdersData: WorkOrder[] = [
   {
     id: '3',
     orderNo: '20178164',
-    name: '',
+    name: 'factory',
     siteLocation: 'Main Factory',
     startTime: '01/04/2021 7:52 PM',
     endTime: '02/04/2021 9:30 AM',

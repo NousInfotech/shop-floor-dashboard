@@ -8,10 +8,10 @@ import {
   UsersRound,
   ClipboardList,
   Settings,
-  Activity,
-  TrendingUp,
+  // Activity,
+  // TrendingUp,
   BarChart3,
-  FileText,
+  // FileText,
   Menu,
   ChevronLeft,
   LayoutDashboard,
@@ -20,6 +20,7 @@ import {
   Route,
   ShoppingCart,
   Boxes,
+  Timer,
 } from "lucide-react";
 
 // Type for sidebar navigation items
@@ -34,6 +35,8 @@ export default function DashboardSidebar() {
   const pathname = usePathname();
   const [sidebarHidden, setSidebarHidden] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
+ const closeSidebar = () => setSidebarHidden(true);  // ✅ Hides the sidebar
+
   const [windowWidth, setWindowWidth] = useState<number>(
     typeof window !== "undefined" ? window.innerWidth : 1024
   );
@@ -65,6 +68,7 @@ export default function DashboardSidebar() {
       href: "/dashboard/product-sites", 
       icon: <Building className="h-5 w-5" />,
       isReadOnly: true 
+      
     },
     { 
       title: "Bill of Materials", 
@@ -116,25 +120,30 @@ export default function DashboardSidebar() {
       href: "/dashboard/control", 
       icon: <Settings className="h-5 w-5" /> 
     },
-    { 
-      title: "Activity Tracking", 
-      href: "/dashboard/activity", 
-      icon: <Activity className="h-5 w-5" /> 
-    },
-    { 
-      title: "Labor Efficiency", 
-      href: "/dashboard/efficiency", 
-      icon: <TrendingUp className="h-5 w-5" /> 
-    },
+    // { 
+    //   title: "Activity Tracking", 
+    //   href: "/dashboard/activity", 
+    //   icon: <Activity className="h-5 w-5" /> 
+    // },
+    // { 
+    //   title: "Labor Efficiency", 
+    //   href: "/dashboard/efficiency", 
+    //   icon: <TrendingUp className="h-5 w-5" /> 
+    // },
     { 
       title: "Productivity Metrics", 
       href: "/dashboard/productivity", 
       icon: <BarChart3 className="h-5 w-5" /> 
     },
-    { 
-      title: "Reports", 
-      href: "/dashboard/reports", 
-      icon: <FileText className="h-5 w-5" /> 
+    // { 
+    //   title: "Reports", 
+    //   href: "/dashboard/reports", 
+    //   icon: <FileText className="h-5 w-5" /> 
+    // },
+     { 
+      title: "Shift Management", 
+      href: "/dashboard/shift-management", 
+      icon: <Timer className="h-5 w-5" /> 
     },
   ];
 
@@ -228,6 +237,7 @@ export default function DashboardSidebar() {
             {/* Dashboard - First item */}
             <Link
               href={functionalItems[0].href}
+               onClick={closeSidebar}
               className={cn(
                 "group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200",
                 pathname === functionalItems[0].href
@@ -261,6 +271,7 @@ export default function DashboardSidebar() {
                     <Link
                       key={item.href}
                       href={item.href}
+                         onClick={closeSidebar}
                       className={cn(
                         "group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200",
                         pathname === item.href
@@ -302,6 +313,7 @@ export default function DashboardSidebar() {
                 <Link
                   key={item.href}
                   href={item.href}
+                     onClick={closeSidebar}
                   className={cn(
                     "group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200",
                     pathname === item.href
