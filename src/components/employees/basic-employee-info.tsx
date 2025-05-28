@@ -115,10 +115,11 @@ import EmployeeModal from './EmployeeModal';
 import AssignModal from './assignmentModal';
 
 export default function EmployeeManagement() {
-  const [employeeCode, setEmployeeCode] = useState('EMP1746906215');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [site, setSite] = useState('Main Factory');
+  const [employeeCode, setEmployeeCode] = useState('');
+const [firstName, setFirstName] = useState('');
+const [lastName, setLastName] = useState('');
+const [site, setSite] = useState(''); // Default is empty
+
   const [employmentType, setEmploymentType] = useState<EmploymentType>(EmploymentType.FullTime);
   const [isActive, setIsActive] = useState(true);
   const [employees, setEmployees] = useState<Employee[]>(() => EmployeesData as Employee[]);
@@ -185,7 +186,16 @@ export default function EmployeeManagement() {
     }
   };
 
-  const handleAddEmployee = () => {
+const handleAddEmployee = () => {
+  // Check required and uniqueness
+  if (!employeeCode.trim()) {
+    alert("Employee Code is required.");
+    return;
+  }
+  if (employees.some(emp => emp.employeeCode === employeeCode.trim())) {
+    alert("Employee Code must be unique.");
+    return;
+  }
     if (!employeeCode || !firstName || !lastName) return;
 
     const newEmployee: Employee = {
@@ -328,68 +338,70 @@ export default function EmployeeManagement() {
           <p className="text-gray-500 mb-6">Enter the basic employee information below. You can add more details later by editing the employee.</p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
-            <div>
-              <label htmlFor="employeeCode" className="block text-sm font-medium mb-1">
-                Employee Code <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <Input
-                  id="employeeCode"
-                  value={employeeCode}
-                  onChange={(e) => setEmployeeCode(e.target.value)}
-                  className="w-full pl-9 border-indigo-200 focus:border-indigo-400 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                />
-                <BadgeCheck className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-indigo-500" />
-              </div>
-            </div>
+          <div>
+  <label htmlFor="employeeCode" className="block text-sm font-medium mb-1">
+    Employee Code <span className="text-red-500">*</span>
+  </label>
+  <div className="relative">
+    <Input
+      id="employeeCode"
+      value={employeeCode}
+      onChange={(e) => setEmployeeCode(e.target.value)}
+      required // HTML5 required
+      className="w-full pl-9 border-indigo-200 focus:border-indigo-400 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+    />
+    <BadgeCheck className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-indigo-500" />
+  </div>
+</div>
+
             
-            <div>
-              <label htmlFor="firstName" className="block text-sm font-medium mb-1">
-                First Name <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <Input
-                  id="firstName"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full pl-9 border-indigo-200 focus:border-indigo-400 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                />
-                <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-indigo-500" />
-              </div>
-            </div>
-            
-            <div>
-              <label htmlFor="lastName" className="block text-sm font-medium mb-1">
-                Last Name <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <Input
-                  id="lastName"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="w-full pl-9 border-indigo-200 focus:border-indigo-400 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                />
-                <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-indigo-500" />
-              </div>
-            </div>
-            
-            <div>
-              <label htmlFor="site" className="block text-sm font-medium mb-1">
-                Site <span className="text-red-500">*</span>
-              </label>
-              <Select value={site} onValueChange={setSite}>
-                <SelectTrigger className="w-full border-indigo-200 focus:border-indigo-400 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 pl-9 relative">
-                  <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-indigo-500" />
-                  <SelectValue placeholder="Select site" />
-                </SelectTrigger>
-                <SelectContent className='bg-white'>
-                  <SelectItem value="Main Factory">Main Factory</SelectItem>
-                  <SelectItem value="Branch Office">Branch Office</SelectItem>
-                  <SelectItem value="Warehouse">Warehouse</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
+         <div>
+  <label htmlFor="firstName" className="block text-sm font-medium mb-1">
+    First Name
+  </label>
+  <div className="relative">
+    <Input
+      id="firstName"
+      value={firstName}
+      onChange={(e) => setFirstName(e.target.value)}
+      className="w-full pl-9 border-indigo-200 focus:border-indigo-400 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+    />
+    <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-indigo-500" />
+  </div>
+</div>
+<div>
+  <label htmlFor="lastName" className="block text-sm font-medium mb-1">
+    Last Name
+  </label>
+  <div className="relative">
+    <Input
+      id="lastName"
+      value={lastName}
+      onChange={(e) => setLastName(e.target.value)}
+      className="w-full pl-9 border-indigo-200 focus:border-indigo-400 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+    />
+    <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-indigo-500" />
+  </div>
+</div>
+
+         
+          <div>
+  <label htmlFor="site" className="block text-sm font-medium mb-1">
+    Site
+  </label>
+  <Select value={site} onValueChange={setSite}>
+    <SelectTrigger className="w-full border-indigo-200 focus:border-indigo-400 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 pl-9 relative">
+      <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-indigo-500" />
+      <SelectValue placeholder="Select site" />
+    </SelectTrigger>
+    <SelectContent className='bg-white'>
+      <SelectItem value="Main Factory">Main Factory</SelectItem>
+      <SelectItem value="Branch Office">Branch Office</SelectItem>
+      <SelectItem value="Warehouse">Warehouse</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+
             <div>
               <label htmlFor="employmentType" className="block text-sm font-medium mb-1">
                 Employment Type

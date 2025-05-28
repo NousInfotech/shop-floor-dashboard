@@ -11,6 +11,7 @@ import TimeLogTab from './time-log-tab'
 // import { ActionButtons } from '../shared/action-buttons'
 
 import { MdInfo, MdFactory, MdGroup, MdAccessTime } from 'react-icons/md'
+import ClockInOut from './clockin-clockout'
 
 interface WorkOrderDetailsProps {
   workOrder: WorkOrder
@@ -26,13 +27,28 @@ export default function WorkOrderDetails({
   // onStatusChange
 }: WorkOrderDetailsProps) {
   const [status, ] = useState(workOrder.status)
-  const [timeLog, ] = useState<Array<{
+  const [timeLog, setTimeLog ] = useState<Array<{
     timestamp: string;
     operationId: string;
     action: string;
     description: string;
   }>>([])
 
+    const handleClockEvent = (clockEntry: {
+    clockInTime: string
+    status: string
+    employeeName?: string
+    teamName?: string
+  }) => {
+    const timeLogEntry = {
+      timestamp: clockEntry.clockInTime,
+      operationId: 'General',
+      action: clockEntry.status === 'clocked-in' ? 'Clock In' : 'Clock Out',
+      description: `${clockEntry.employeeName || clockEntry.teamName} ${clockEntry.status}`
+    }
+
+   setTimeLog (prev => [...prev, timeLogEntry])
+  }
   // const handleStatusChange = (newStatus: string) => {
   //   setStatus(newStatus as typeof status)
 
@@ -116,6 +132,9 @@ export default function WorkOrderDetails({
         </TabsContent>
 
         <TabsContent value="timeLog" className="p-6">
+          <div className='mb-8'>
+           <ClockInOut onClockEvent={handleClockEvent} />
+           </div>
           <TimeLogTab workOrder={{ ...workOrder, status }} timeLog={timeLog} />
         </TabsContent>
       </Tabs>

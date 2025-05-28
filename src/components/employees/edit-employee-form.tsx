@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Employee } from '@/types/employee';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { 
   CURRENCIES, 
   DEPARTMENTS, 
@@ -17,14 +18,22 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { UploadIcon, SaveIcon } from 'lucide-react';
 
+// Extended Employee interface to include accessRights
+interface ExtendedEmployee extends Employee {
+  accessRights?: string[];
+}
+
 interface EditEmployeeFormProps {
   employee: Employee;
   onSubmit: (employee: Employee) => void;
   onCancel: () => void;
 }
 
+// Available access rights
+const ACCESS_RIGHTS = ['View', 'Edit', 'Approve', 'Delete', 'Create', 'Admin'];
+
 export default function EditEmployeeForm({ employee, onSubmit }: EditEmployeeFormProps) {
-  const [formData, setFormData] = useState<Employee>({
+  const [formData, setFormData] = useState<ExtendedEmployee>({
     ...employee,
     payment: employee.payment || {
       currency: 'USD',
@@ -33,11 +42,15 @@ export default function EditEmployeeForm({ employee, onSubmit }: EditEmployeeFor
       locationId: ''
     },
     firstName: employee.firstName || '',
-    lastName: employee.lastName || ''
+    lastName: employee.lastName || '',
+    accessRights: (employee as ExtendedEmployee).accessRights || []
   });
   const [, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(employee.photo || null);
   const [allFieldsValid, setAllFieldsValid] = useState(false);
+
+  // Check if access rights should be shown - hide if no rights are available
+  const hasAccessRights = ACCESS_RIGHTS.length > 0;
 
   useEffect(() => {
     setFormData({
@@ -49,27 +62,16 @@ export default function EditEmployeeForm({ employee, onSubmit }: EditEmployeeFor
         locationId: ''
       },
       firstName: employee.firstName || '',
-      lastName: employee.lastName || ''
+      lastName: employee.lastName || '',
+      accessRights: (employee as ExtendedEmployee).accessRights || []
     });
     setPhotoPreview(employee.photo || null);
   }, [employee]);
 
-  // Validate all required fields
+  // Validate all required fields - Only Emp Code is required based on requirements
   useEffect(() => {
     const requiredFields = [
-      formData.employeeCode,
-      formData.site,
-      formData.firstName,
-      formData.lastName,
-      formData.siteCode,
-      formData.shift,
-      formData.email,
-      formData.phone,
-      formData.address,
-      formData.role,
-      formData.payment?.currency,
-      formData.payment?.rateType,
-      formData.payment?.unitCost !== undefined && formData.payment?.unitCost > 0
+      formData.employeeCode?.trim() // Only Emp Code is required
     ];
     
     setAllFieldsValid(requiredFields.every(Boolean));
@@ -113,6 +115,20 @@ export default function EditEmployeeForm({ employee, onSubmit }: EditEmployeeFor
     }
   };
 
+  const handleAccessRightChange = (right: string, checked: boolean) => {
+    setFormData((prev) => {
+      const currentRights = prev.accessRights || [];
+      const updatedRights = checked 
+        ? [...currentRights, right]
+        : currentRights.filter((r: string) => r !== right);
+      
+      return {
+        ...prev,
+        accessRights: updatedRights
+      };
+    });
+  };
+
   const handleUnitCostChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
     setFormData((prev) => {
@@ -145,8 +161,10 @@ export default function EditEmployeeForm({ employee, onSubmit }: EditEmployeeFor
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Create a clean employee object without accessRights for submission
+    const { ...cleanFormData } = formData;
     const updatedEmployee = {
-      ...formData,
+      ...cleanFormData,
       ...(photoPreview !== employee.photo && { photo: photoPreview ?? undefined })
     };
     
@@ -188,7 +206,7 @@ export default function EditEmployeeForm({ employee, onSubmit }: EditEmployeeFor
                 <Input
                   id="employeeCode"
                   name="employeeCode"
-                  value={formData.employeeCode}
+                  value={formData.employeeCode || ''}
                   onChange={handleChange}
                   placeholder="e.g. EMP0001"
                   className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
@@ -197,9 +215,9 @@ export default function EditEmployeeForm({ employee, onSubmit }: EditEmployeeFor
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="site" className="font-medium">Site*</Label>
+                <Label htmlFor="site" className="font-medium">Site</Label>
                 <Select 
-                  value={formData.site} 
+                  value={formData.site || ''} 
                   onValueChange={(value) => handleSelectChange('site', value)}
                 >
                   <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white" id="site">
@@ -214,7 +232,7 @@ export default function EditEmployeeForm({ employee, onSubmit }: EditEmployeeFor
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="firstName" className="font-medium">First Name*</Label>
+                <Label htmlFor="firstName" className="font-medium">First Name</Label>
                 <Input
                   id="firstName"
                   name="firstName"
@@ -222,12 +240,11 @@ export default function EditEmployeeForm({ employee, onSubmit }: EditEmployeeFor
                   onChange={handleChange}
                   placeholder="Enter first name"
                   className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="lastName" className="font-medium">Last Name*</Label>
+                <Label htmlFor="lastName" className="font-medium">Last Name</Label>
                 <Input
                   id="lastName"
                   name="lastName"
@@ -235,27 +252,25 @@ export default function EditEmployeeForm({ employee, onSubmit }: EditEmployeeFor
                   onChange={handleChange}
                   placeholder="Enter last name"
                   className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="siteCode" className="font-medium">Site Code*</Label>
+                <Label htmlFor="siteCode" className="font-medium">Site Code</Label>
                 <Input
                   id="siteCode"
                   name="siteCode"
-                  value={formData.siteCode}
+                  value={formData.siteCode || ''}
                   onChange={handleChange}
                   placeholder="e.g. MAIN01"
                   className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  required
                 />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="employmentType" className="font-medium">Employment Type</Label>
                 <Select 
-                  value={formData.employmentType} 
+                  value={formData.employmentType || ''} 
                   onValueChange={(value) => handleSelectChange('employmentType', value)}
                 >
                   <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white" id="employmentType">
@@ -272,7 +287,7 @@ export default function EditEmployeeForm({ employee, onSubmit }: EditEmployeeFor
               <div className="space-y-2">
                 <Label htmlFor="status" className="font-medium">Status</Label>
                 <Select 
-                  value={formData.status} 
+                  value={formData.status || ''} 
                   onValueChange={(value) => handleSelectChange('status', value)}
                 >
                   <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white" id="status">
@@ -287,9 +302,9 @@ export default function EditEmployeeForm({ employee, onSubmit }: EditEmployeeFor
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="shift" className="font-medium">Shift*</Label>
+                <Label htmlFor="shift" className="font-medium">Shift</Label>
                 <Select 
-                  value={formData.shift} 
+                  value={formData.shift || ''} 
                   onValueChange={(value) => handleSelectChange('shift', value)}
                 >
                   <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white" id="shift">
@@ -311,73 +326,70 @@ export default function EditEmployeeForm({ employee, onSubmit }: EditEmployeeFor
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="email" className="font-medium">Email*</Label>
+                <Label htmlFor="email" className="font-medium">Email</Label>
                 <Input
                   id="email"
                   name="email"
                   type="email"
-                  value={formData.email}
+                  value={formData.email || ''}
                   onChange={handleChange}
                   placeholder="email@example.com"
                   className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="phone" className="font-medium">Phone*</Label>
+                <Label htmlFor="phone" className="font-medium">Phone</Label>
                 <Input
                   id="phone"
                   name="phone"
-                  value={formData.phone}
+                  value={formData.phone || ''}
                   onChange={handleChange}
                   placeholder="+1 (555) 123-4567"
                   className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="address" className="font-medium">Address*</Label>
+                <Label htmlFor="address" className="font-medium">Address</Label>
                 <Input
                   id="address"
                   name="address"
-                  value={formData.address}
+                  value={formData.address || ''}
                   onChange={handleChange}
                   placeholder="1234 Main St, City, State"
                   className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="role" className="font-medium">Role*</Label>
+                <Label htmlFor="role" className="font-medium">Role</Label>
                 <Input
                   id="role"
                   name="role"
-                  value={formData.role}
+                  value={formData.role || ''}
                   onChange={handleChange}
                   placeholder="e.g. Warehouse Supervisor"
                   className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  required
                 />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="department" className="font-medium">Department</Label>
-                <Select 
-                  value={formData.department} 
-                  onValueChange={(value) => handleSelectChange('department', value)}
-                >
-                  <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white" id="department">
-                    <SelectValue placeholder="Select department" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white z-50 shadow-lg border border-gray-200">
-                    {DEPARTMENTS.map(dept => (
-                      <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+             <Select 
+  value={formData.department || undefined}
+  onValueChange={(value) => handleSelectChange('department', value)}
+>
+  <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white" id="department">
+    <SelectValue placeholder="Select department" />
+  </SelectTrigger>
+  <SelectContent className="bg-white z-50 shadow-lg border border-gray-200">
+    {DEPARTMENTS.map(dept => (
+      <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+    ))}
+  </SelectContent>
+</Select>
+
               </div>
               
               <div className="space-y-2">
@@ -385,7 +397,7 @@ export default function EditEmployeeForm({ employee, onSubmit }: EditEmployeeFor
                 <Input
                   id="position"
                   name="position"
-                  value={formData.position}
+                  value={formData.position || ''}
                   onChange={handleChange}
                   placeholder="e.g. Supervisor"
                   className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
@@ -428,16 +440,42 @@ export default function EditEmployeeForm({ employee, onSubmit }: EditEmployeeFor
               </div>
             </div>
           </div>
+
+          {/* Section 3: Access Rights - Only show if rights are available */}
+          {hasAccessRights && (
+            <div className="space-y-6">
+              <h3 className="text-lg font-medium border-b pb-2 text-blue-800">Access Rights</h3>
+              
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {ACCESS_RIGHTS.map((right) => (
+                  <div key={right} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`access-${right}`}
+                      checked={formData.accessRights?.includes(right) || false}
+                      onCheckedChange={(checked) => handleAccessRightChange(right, checked as boolean)}
+                      className="border-gray-300"
+                    />
+                    <Label 
+                      htmlFor={`access-${right}`}
+                      className="text-sm font-medium cursor-pointer"
+                    >
+                      {right}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           
-          {/* Section 3: Payment Details */}
+          {/* Section 4: Payment Details */}
           <div className="space-y-6">
             <h3 className="text-lg font-medium border-b pb-2 text-blue-800">Payment Details</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="payment.currency" className="font-medium">Currency*</Label>
+                <Label htmlFor="payment.currency" className="font-medium">Currency</Label>
                 <Select 
-                  value={formData.payment?.currency} 
+                  value={formData.payment?.currency || ''} 
                   onValueChange={(value) => handleSelectChange('payment.currency', value)}
                 >
                   <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white" id="payment.currency">
@@ -452,9 +490,9 @@ export default function EditEmployeeForm({ employee, onSubmit }: EditEmployeeFor
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="payment.rateType" className="font-medium">Rate Type*</Label>
+                <Label htmlFor="payment.rateType" className="font-medium">Rate Type</Label>
                 <Select 
-                  value={formData.payment?.rateType} 
+                  value={formData.payment?.rateType || ''} 
                   onValueChange={(value) => handleSelectChange('payment.rateType', value)}
                 >
                   <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white" id="payment.rateType">
@@ -469,7 +507,7 @@ export default function EditEmployeeForm({ employee, onSubmit }: EditEmployeeFor
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="payment.unitCost" className="font-medium">Unit Cost*</Label>
+                <Label htmlFor="payment.unitCost" className="font-medium">Unit Cost</Label>
                 <div className="relative">
                   <span className="absolute left-3 top-2.5 text-gray-500">
                     {formData.payment?.currency === 'USD' ? '$' : formData.payment?.currency || ''}
@@ -482,7 +520,6 @@ export default function EditEmployeeForm({ employee, onSubmit }: EditEmployeeFor
                     onChange={handleUnitCostChange}
                     className="pl-8 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                     placeholder="0.00"
-                    required
                   />
                 </div>
               </div>

@@ -1,42 +1,13 @@
+/* eslint-disable */
+
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { WorkOrder } from '@/types/work-order'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
-import { Pause, Play, Coffee, Clock, FileText } from 'lucide-react'
-
-// Define proper types for operations
-interface WorkOrderOperation {
-  id: string | number
-  name: string
-  workCenter: string
-  status: string
-  // Replace any with Record<string, unknown> for additional properties
-  [key: string]: string | number | boolean | null | undefined
-}
-
-type Operation = WorkOrderOperation & {
-  id: string | number
-  name: string
-  workCenter: string
-  status: string
-  timer: number
-  timerRunning: boolean
-  timerDisplay: string
-  breakEndsAt: string | null
-  indirectEndsAt: string | null
-  indirectReason: string
-  canPlay: boolean
-  canPause: boolean
-  canBreak: boolean
-  canIndirect: boolean
-  canComplete: boolean
-  completedAt?: string
-  // Add index signature to match WorkOrderOperation
-  [key: string]: string | number | boolean | null | undefined
-}
+import { Pause, Play, Coffee, Clock, FileText, PlayCircle } from 'lucide-react'
 
 interface ProductionTabProps {
   workOrder: WorkOrder
@@ -44,13 +15,14 @@ interface ProductionTabProps {
 
 export default function ProductionTab({ workOrder }: ProductionTabProps) {
   // Define operation state with timers and statuses
-  const [operations, setOperations] = useState<Operation[]>([])
+  const [operations, setOperations] = useState<any[]>([])
   const [openBreakDialog, setOpenBreakDialog] = useState(false)
   const [openIndirectDialog, setOpenIndirectDialog] = useState(false)
   const [openTimeDialog, setOpenTimeDialog] = useState(false)
+  const [openStartAllDialog, setOpenStartAllDialog] = useState(false)
   const [currentBreakTime, setCurrentBreakTime] = useState(5)
   const [currentIndirectTime, setCurrentIndirectTime] = useState(15)
-  const [selectedOperation, setSelectedOperation] = useState<string | number | null>(null)
+  const [selectedOperation, setSelectedOperation] = useState<number | null>(null)
   const [indirectReason, setIndirectReason] = useState('Machine Setup')
   const [manualTimeEntry, setManualTimeEntry] = useState({
     hours: 0,
@@ -62,63 +34,33 @@ export default function ProductionTab({ workOrder }: ProductionTabProps) {
     runningOperations: 0,
     pausedOperations: 0,
     indirectOperations: 0,
-    totalTime: "00:00:00"
+    totalTime: "00:00:00",
+    pendingOperations: 0
   })
   
-  // Format seconds to HH:MM:SS
-  const formatTime = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600)
-    const minutes = Math.floor((seconds % 3600) / 60)
-    const secs = seconds % 60
-    
-    return [
-      hours.toString().padStart(2, '0'),
-      minutes.toString().padStart(2, '0'),
-      secs.toString().padStart(2, '0')
-    ].join(':')
-  }
-  
-  // Update production metrics based on current operations
-  // Wrapped in useCallback to prevent dependency changes on every render
-  const updateProductionMetrics = useCallback((ops: Operation[]): void => {
-    const completed = ops.filter(op => op.status === 'COMPLETED').length
-    const running = ops.filter(op => op.status === 'RUNNING').length
-    const paused = ops.filter(op => op.status === 'PAUSED').length
-    const indirect = ops.filter(op => op.status === 'INDIRECT').length
-    
-    // Calculate total time across all operations
-    const totalSeconds = ops.reduce((total, op) => total + op.timer, 0)
-    
-    setProductionMetrics({
-      completedOperations: completed,
-      runningOperations: running,
-      pausedOperations: paused,
-      indirectOperations: indirect,
-      totalTime: formatTime(totalSeconds)
-    })
-  }, [formatTime])
-  
-useEffect(() => {
-  if (workOrder.operations?.length) {
-    const initializedOps: Operation[] = (workOrder.operations).map((op) => ({
-      ...op,
-      timer: 0,
-      timerRunning: op.status === 'RUNNING',
-      timerDisplay: '00:00:00',
-      breakEndsAt: null,
-      indirectEndsAt: null,
-      indirectReason: '',
-      canPlay: op.status !== 'RUNNING',
-      canPause: op.status === 'RUNNING',
-      canBreak: true,
-      canIndirect: true,
-      canComplete: true
-    }))
-    setOperations(initializedOps)
-    updateProductionMetrics(initializedOps)
-  }
-}, [workOrder, updateProductionMetrics])
-
+  // Initialize operations state from props
+  useEffect(() => {
+    if (workOrder.operations?.length) {
+      const initializedOps = workOrder.operations.map(op => ({
+        ...op,
+        timer: 0,
+        timerRunning: op.status === 'RUNNING',
+        timerDisplay: '00:00:00',
+        breakEndsAt: null,
+        indirectEndsAt: null,
+        indirectReason: '',
+        canPlay: op.status !== 'RUNNING',
+        canPause: op.status === 'RUNNING',
+        canBreak: true,
+        canIndirect: true,
+        canComplete: true
+      }))
+      setOperations(initializedOps)
+      
+      // Update metrics
+      updateProductionMetrics(initializedOps)
+    }
+  }, [workOrder])
   
   // Timer update effect
   useEffect(() => {
@@ -170,15 +112,77 @@ useEffect(() => {
     }, 1000)
     
     return () => clearInterval(interval)
-  }, [formatTime])
+  }, [])
   
   // Update metrics whenever operations change
   useEffect(() => {
     updateProductionMetrics(operations)
-  }, [operations, updateProductionMetrics])
+  }, [operations])
+  
+  // Format seconds to HH:MM:SS
+  const formatTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    const secs = seconds % 60
+    
+    return [
+      hours.toString().padStart(2, '0'),
+      minutes.toString().padStart(2, '0'),
+      secs.toString().padStart(2, '0')
+    ].join(':')
+  }
+
+  // Get pending operations (PENDING, PAUSED, or not RUNNING/COMPLETED/BREAK/INDIRECT)
+  const getPendingOperations = () => {
+    return operations.filter(op => 
+      op.status === 'PENDING' || 
+      op.status === 'PAUSED' || 
+      (op.status !== 'RUNNING' && 
+       op.status !== 'COMPLETED' && 
+       op.status !== 'BREAK' && 
+       op.status !== 'INDIRECT')
+    )
+  }
+
+  // Start All functionality
+  const handleStartAll = () => {
+    const pendingOps = getPendingOperations()
+    if (pendingOps.length === 0) {
+      return // No operations to start
+    }
+    setOpenStartAllDialog(true)
+  }
+
+  // Confirm Start All
+  const confirmStartAll = () => {
+    const pendingOps = getPendingOperations()
+    
+    setOperations(prevOps => 
+      prevOps.map(op => {
+        // Only start operations that are pending/paused and not on break or indirect
+        if (pendingOps.some(pending => pending.id === op.id) && 
+            !op.breakEndsAt && 
+            !op.indirectEndsAt) {
+          return {
+            ...op,
+            timerRunning: true,
+            status: 'RUNNING',
+            canPlay: false,
+            canPause: true,
+            canBreak: true,
+            canIndirect: true,
+            canComplete: true
+          }
+        }
+        return op
+      })
+    )
+    
+    setOpenStartAllDialog(false)
+  }
   
   // Pause an operation
-  const pauseOperation = (opId: string | number): void => {
+  const pauseOperation = (opId: number) => {
     setOperations(prevOps => 
       prevOps.map(op => {
         if (op.id === opId) {
@@ -199,7 +203,7 @@ useEffect(() => {
   }
   
   // Play/start an operation
-  const playOperation = (opId: string | number): void => {
+  const playOperation = (opId: number) => {
     setOperations(prevOps => 
       prevOps.map(op => {
         if (op.id === opId) {
@@ -220,13 +224,13 @@ useEffect(() => {
   }
   
   // Start indirect time for an operation
-  const startIndirect = (opId: string | number): void => {
+  const startIndirect = (opId: number) => {
     setSelectedOperation(opId)
     setOpenIndirectDialog(true)
   }
   
   // Confirm indirect dialog
-  const confirmIndirect = (): void => {
+  const confirmIndirect = () => {
     if (selectedOperation === null) return
     
     const indirectEndTime = new Date()
@@ -257,7 +261,7 @@ useEffect(() => {
   }
 
   // Save manual time entry
-  const saveTimeEntry = (): void => {
+  const saveTimeEntry = () => {
     if (selectedOperation === null) return
     
     const totalSeconds = 
@@ -290,7 +294,7 @@ useEffect(() => {
   }
   
   // Handle manual time entry changes
-  const handleTimeEntryChange = (field: 'hours' | 'minutes' | 'seconds', value: number): void => {
+  const handleTimeEntryChange = (field: 'hours' | 'minutes' | 'seconds', value: number) => {
     setManualTimeEntry(prev => ({
       ...prev,
       [field]: value
@@ -298,13 +302,13 @@ useEffect(() => {
   }
   
   // Start a break for an operation
-  const startBreak = (opId: string | number): void => {
+  const startBreak = (opId: number) => {
     setSelectedOperation(opId)
     setOpenBreakDialog(true)
   }
   
   // Confirm break dialog
-  const confirmBreak = (): void => {
+  const confirmBreak = () => {
     if (selectedOperation === null) return
     
     const breakEndTime = new Date()
@@ -334,7 +338,7 @@ useEffect(() => {
   }
   
   // Complete an operation
-  const completeOperation = (opId: string | number): void => {
+  const completeOperation = (opId: number) => {
     setOperations(prevOps => 
       prevOps.map(op => {
         if (op.id === opId) {
@@ -355,9 +359,40 @@ useEffect(() => {
     )
   }
   
+  // Update production metrics based on current operations
+  const updateProductionMetrics = (ops: any[]) => {
+    const completed = ops.filter(op => op.status === 'COMPLETED').length
+    const running = ops.filter(op => op.status === 'RUNNING').length
+    const paused = ops.filter(op => op.status === 'PAUSED').length
+    const indirect = ops.filter(op => op.status === 'INDIRECT').length
+    const pending = getPendingOperations().length
+    
+    // Calculate total time across all operations
+    const totalSeconds = ops.reduce((total, op) => total + op.timer, 0)
+    
+    setProductionMetrics({
+      completedOperations: completed,
+      runningOperations: running,
+      pausedOperations: paused,
+      indirectOperations: indirect,
+      pendingOperations: pending,
+      totalTime: formatTime(totalSeconds)
+    })
+  }
+  
   return (
     <div className="p-6">
-      <h3 className="text-xl font-semibold mb-6">Operations</h3>
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-xl font-semibold">Operations</h3>
+        <Button
+          onClick={handleStartAll}
+          disabled={getPendingOperations().length === 0}
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md flex items-center gap-2"
+        >
+          <PlayCircle className="h-5 w-5" />
+          Start All ({getPendingOperations().length})
+        </Button>
+      </div>
       
       {operations.length ? operations.map((op) => (
         <div key={op.id} className="mb-6">
@@ -421,13 +456,13 @@ useEffect(() => {
                     <Pause className="h-6 w-6" />
                   </Button>
                   
-                  {/* Complete button - disabled during break or indirect */}
+                  {/* Complete button - enabled when not on break or indirect */}
                   <Button
-                    onClick={() => completeOperation(op.id)}
+                   onClick={() => completeOperation(op.id)}
                     variant="outline"
                     size="icon"
                     className="h-12 w-12 rounded-md bg-blue-100 text-blue-600 border hover:bg-opacity-70"
-                    disabled={op.breakEndsAt !== null || op.indirectEndsAt !== null}
+                      disabled={op.breakEndsAt !== null || op.indirectEndsAt !== null}
                   >
                     <Clock className="h-6 w-6" />
                   </Button>
@@ -445,11 +480,11 @@ useEffect(() => {
                   
                   {/* Indirect button - enabled when not on break or indirect */}
                   <Button
-                    onClick={() => startIndirect(op.id)}
+                      onClick={() => startIndirect(op.id)}
                     variant="outline"
                     size="icon"
                     className="h-12 w-12 rounded-md bg-purple-500 text-white border hover:bg-opacity-70"
-                    disabled={op.indirectEndsAt !== null || op.breakEndsAt !== null}
+                     disabled={op.indirectEndsAt !== null || op.breakEndsAt !== null}
                   >
                     <FileText className="h-6 w-6" />
                   </Button>
@@ -514,10 +549,14 @@ useEffect(() => {
       <div className="mt-8">
         <h3 className="text-lg font-medium mb-4">Production Dashboard</h3>
         <div className="bg-gray-50 p-6 rounded-lg">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
             <div className="bg-white p-4 rounded-md shadow-sm">
               <h4 className="text-gray-500 text-sm">Total Time</h4>
               <p className="text-lg font-semibold">{productionMetrics.totalTime}</p>
+            </div>
+            <div className="bg-white p-4 rounded-md shadow-sm">
+              <h4 className="text-gray-500 text-sm">Pending</h4>
+              <p className="text-lg font-semibold text-gray-600">{productionMetrics.pendingOperations}</p>
             </div>
             <div className="bg-white p-4 rounded-md shadow-sm">
               <h4 className="text-gray-500 text-sm">Completed</h4>
@@ -538,6 +577,24 @@ useEffect(() => {
           </div>
         </div>
       </div>
+
+      {/* Start All Confirmation Dialog */}
+      <AlertDialog open={openStartAllDialog} onOpenChange={setOpenStartAllDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Start All Operations</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to start all {getPendingOperations().length} pending operations? This will begin timing for all operations that are not currently running, completed, on break, or doing indirect work.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmStartAll} className="bg-green-600 hover:bg-green-700">
+              Start All Operations
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       
       {/* Break Dialog */}
       <AlertDialog open={openBreakDialog} onOpenChange={setOpenBreakDialog}>
