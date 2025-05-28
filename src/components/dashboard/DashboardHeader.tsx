@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import Link from "next/link";
 
 export default function DashboardHeader() {
   return (
@@ -83,12 +84,12 @@ export default function DashboardHeader() {
                 <User className="h-4 w-4 mr-3 text-zinc-600" />
                 <span>Profile</span>
               </DropdownMenuItem>
-              
+              <Link href="/dashboard/settings">
               <DropdownMenuItem className="cursor-pointer flex items-center py-2 px-4 hover:bg-zinc-50">
                 <Settings className="h-4 w-4 mr-3 text-zinc-600" />
                 <span>Settings</span>
               </DropdownMenuItem>
-              
+              </Link>
               <DropdownMenuSeparator className="my-1" />
               
               <DropdownMenuItem className="cursor-pointer flex items-center py-2 px-4 hover:bg-zinc-50 text-red-600">
